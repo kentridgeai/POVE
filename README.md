@@ -6,4 +6,6 @@ Due to its large size, the complete POVE dataset is hosted separately on Hugging
 
 [https://huggingface.co/datasets/ksfong/POVE/tree/main](https://huggingface.co/datasets/ksfong/POVE/tree/main)
 
+Code and examples are also provided on the huggingface link.
+
 Dataset card for POVE is also found in the above link, or specifically [here](https://huggingface.co/datasets/ksfong/POVE).
