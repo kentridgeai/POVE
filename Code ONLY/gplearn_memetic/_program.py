@@ -1,0 +1,1 @@
+BAD_PRED_VALUE = -100
