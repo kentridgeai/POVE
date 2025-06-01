@@ -249,20 +249,36 @@ def ast_to_string(node):
         raise SimplificationError(f"Unsupported AST node type: {type(node)} when converting to string.")
 
 def replace_math_functions(expression):
-    # Define function replacements in order of operation precedence
-    replacements = {
-        r'add\(([^,]+),\s*([^\)]+)\)': r'(\1 + \2)',
-        r'sub\(([^,]+),\s*([^\)]+)\)': r'(\1 - \2)',
-        r'mul\(([^,]+),\s*([^\)]+)\)': r'(\1 * \2)',
-        r'div\(([^,]+),\s*([^\)]+)\)': r'(\1 / \2)'
+    expr = expression.strip()
+    match = re.match(r'^(add|sub|mul|div)\(', expr)
+    if not match:
+        return expr
+    fn = match.group(1)
+    inner = expr[len(fn) + 1 : -1]
+
+    # Helper: find the top‐level comma in 'inner'
+    def split_top_comma(s):
+        depth = 0
+        for i, ch in enumerate(s):
+            if ch == '(':
+                depth += 1
+            elif ch == ')':
+                depth -= 1
+            elif ch == ',' and depth == 0:
+                return s[:i], s[i+1:]
+        raise ValueError(f"No top‐level comma found in: {s!r}")
+
+    left_str, right_str = split_top_comma(inner)
+    left_repl  = replace_math_functions(left_str)
+    right_repl = replace_math_functions(right_str)
+    ops = {
+        'add': '+',
+        'sub': '-',
+        'mul': '*',
+        'div': '/'
     }
-    
-    # Apply replacements iteratively until no more matches are found
-    while any(re.search(pattern, expression) for pattern in replacements):
-        for pattern, repl in replacements.items():
-            expression = re.sub(pattern, repl, expression)
-    
-    return expression
+    op_symbol = ops[fn]
+    return f"({left_repl.strip()} {op_symbol} {right_repl.strip()})"
 
 def replace_constants(expression):
     # Replace all numeric constants (including decimals and negatives) with 'C'
